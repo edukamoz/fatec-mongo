@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors' // Importa o módulo cors
 import { connectToDatabase } from './config/db.js'
 import municipiosRoutes from './routes/municipios.js'
+import usuariosRoutes from './routes/usuarios.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -13,6 +14,7 @@ app.use(express.json())//parse do JSON
 app.use('/', express.static('public'))
 //Rotas do app
 app.use('/api/municipios', municipiosRoutes)
+app.use('/api/usuarios', usuariosRoutes)
 //define o favicon
 app.use('/favicon.ico', express.static('public/images/logo.png'))
 //start the server

@@ -1,6 +1,5 @@
 import { check, param, validationResult } from "express-validator"
 import { ObjectId } from "mongodb"
-const db = req.app.ocals.db
 
 // Middleware para verificar resultados da validação
 export const validateRequest = (req, res, next) => {
@@ -189,17 +188,17 @@ export const validateUsuario = [
   check('email')
     .not().isEmpty().trim().withMessage('É obrigatório informar o email')
     .isEmail().withMessage('Informe um email válido')
-    .isLowercase().withMessage('Não são permitidas maiúsculas')
-    .custom((value, {req}) => {
-      return db.collection('usuarios')
-        .find({email: {$eq: value}}).toArray()
-        .then((email) => {
-          //Verificar se não existe o ID para garantir que é inclusão
-          if(email.length && !req.params.id) {
-            return Promise.reject(`O email ${value} já existe!`)
-          }
-      })
-    }),
+    .isLowercase().withMessage('Não são permitidas maiúsculas'),
+    // .custom((value, {}) => {
+    //   return db.collection('usuarios')
+    //     .find({email: {$eq: value}}).toArray()
+    //     .then((email) => {
+    //       //Verificar se não existe o ID para garantir que é inclusão
+    //       if(email.length) {
+    //         return Promise.reject(`O email ${value} já existe!`)
+    //       }
+    //   })
+    // }),
   check('senha')
     .not().isEmpty().trim().withMessage('A senha é obrigatória')
     .isLength({min: 5}).withMessage('A senha deve ter no mínimo 6 caracteres')
