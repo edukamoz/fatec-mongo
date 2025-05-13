@@ -1,9 +1,11 @@
 import express from 'express'
+import {config} from 'dotenv'
 import cors from 'cors' // Importa o módulo cors
 import { connectToDatabase } from './config/db.js'
 import municipiosRoutes from './routes/municipios.js'
 import usuariosRoutes from './routes/usuarios.js'
 
+config() // Carrega o conteúdo do .env
 const app = express()
 const PORT = process.env.PORT || 3000
 

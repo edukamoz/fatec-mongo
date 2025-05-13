@@ -15,3 +15,48 @@ export const insereUsuario = async(req, res) => {
         .catch(err => res.status(400).json(err))
     
 }
+
+export const efetuaLogin = async (req, res) => {
+    const { email, senha } = req.body
+    try {
+        const db = req.app.locals.db
+        // Verificar se o email existe no MongoDB
+        let usuario = await db.collection('usuarios').find({email}).toArray()
+        // Se o array estiver vazio, é porque não tem...
+        if (!usuario.length) {
+            return res.status(404).json({
+                error: [{
+                    value: `${email}`,
+                    msg: `O email ${email} não está cadastrado`,
+                    param:'email' 
+                }]
+            })
+        }
+        // Verificando a senha...
+        const isMatch = await bcrypt.compare(senha, usuario[0].senha)
+        if (!isMatch) {
+            return res.status(403).json({//forbidden
+                errors: [{
+                    value: 'senha',
+                    msg: 'A senha informada está incorreta',
+                    param: 'senha'
+                }]
+            })
+        }
+        // Se tudo ok, iremos gerar o token JWT
+        jwt.sign(
+            {usuario: {id: usuario[0]._id}},
+            process.env.SECRET_KEY,
+            {expiresIn: process.env.EXPIRES_IN},
+            (err, token) => {
+                if (err) throw err
+                res.status(200).json({
+                    access_token: token,
+                    msg: 'Login efetuado com sucesso'
+                })
+            }
+        )
+    } catch (e) {
+        console.error(e)
+    }
+}

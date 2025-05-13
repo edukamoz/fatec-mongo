@@ -11,3 +11,13 @@ Content-Type: application/json
     "email": "einstein@fatec.gov.br",
     "senha": "{{senha}}"
 }
+
+###
+# @prompt senha
+POST {{baseURL}}/login
+Content-Type: application/json
+
+{
+    "email": "einstein@fatec.gov.br",
+    "senha": "{{senha}}"
+}
