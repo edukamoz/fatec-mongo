@@ -2,61 +2,60 @@ import { ObjectId } from "mongodb"
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-export const insereUsuario = async(req, res) => {
-    req.body.avatar = `https://ui-avatars.com/api?name=${req.body.nome.replace(/ /g,'+')}&background=F00&color=FFF`
-    // criptografia da senha
-    const salt = await bcrypt.genSalt(10) // 10 rodadas de processamento do hash
+export const insereUsuario = async (req, res) => {
+    req.body.avatar = `https://ui-avatars.com/api/?name=${req.body.nome.replace(/ /g, '+')}&background=F00&color=FFF`
+    //criptografia da senha
+    const salt = await bcrypt.genSalt(10) //10 rodadas de processamento do hash
     req.body.senha = await bcrypt.hash(req.body.senha, salt)
     //salvando o usuário...
     const db = req.app.locals.db
     await db.collection('usuarios')
         .insertOne(req.body)
-        .then(result => res.status(201).send(result))
-        .catch(err => res.status(400).json(err))
-    
+        .then(result => res.status(201).send(result)
+            .catch(err => res.status(400).json(err))
+        )
 }
 
 export const efetuaLogin = async (req, res) => {
-    const { email, senha } = req.body
-    try {
+    const { email, senha} = req.body
+    try{
         const db = req.app.locals.db
-        // Verificar se o email existe no MongoDB
-        let usuario = await db.collection('usuarios').find({email}).toArray()
-        // Se o array estiver vazio, é porque não tem...
-        if (!usuario.length) {
+        //Verificar se o email existe no MongoDB
+        let usuario = await db.collection('usuarios').find({email}).limit(1).toArray()
+        //Se o array estiver vazio, é porque não tem...
+        if(!usuario.length){
             return res.status(404).json({
-                error: [{
+                errors: [{
                     value: `${email}`,
                     msg: `O email ${email} não está cadastrado`,
-                    param:'email' 
+                    param: 'email'
                 }]
             })
         }
-        // Verificando a senha...
+        //Verificando a senha...
         const isMatch = await bcrypt.compare(senha, usuario[0].senha)
-        if (!isMatch) {
+        if (!isMatch)
             return res.status(403).json({//forbidden
                 errors: [{
                     value: 'senha',
                     msg: 'A senha informada está incorreta',
                     param: 'senha'
                 }]
-            })
-        }
-        // Se tudo ok, iremos gerar o token JWT
+        })
+        //Se tudo ok, iremos gerar o token JWT
         jwt.sign(
             {usuario: {id: usuario[0]._id}},
             process.env.SECRET_KEY,
             {expiresIn: process.env.EXPIRES_IN},
             (err, token) => {
-                if (err) throw err
+                if(err) throw err
                 res.status(200).json({
                     access_token: token,
                     msg: 'Login efetuado com sucesso'
                 })
             }
         )
-    } catch (e) {
+    } catch (e){
         console.error(e)
     }
 }
